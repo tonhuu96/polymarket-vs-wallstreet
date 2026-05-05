@@ -37,24 +37,24 @@ describe('history store', () => {
 
   it('readHistory returns empty arrays for every PairId when file is missing', async () => {
     const h = await readHistory();
-    const ids: PairId[] = ['fed-may', 'fed-jun', 'btc-100k', 'spx-7000'];
+    const ids: PairId[] = ['fed-jun', 'fed-jul', 'btc-150k', 'spx-7400'];
     for (const id of ids) {
       expect(h[id]).toEqual([]);
     }
   });
 
   it('append → read returns the appended value for that pair', async () => {
-    await appendDailySpread('fed-may', 12.5);
+    await appendDailySpread('fed-jun', 12.5);
     const h = await readHistory();
-    expect(h['fed-may']).toEqual([{ date: TODAY, spread: 12.5 }]);
-    expect(h['fed-jun']).toEqual([]);
+    expect(h['fed-jun']).toEqual([{ date: TODAY, spread: 12.5 }]);
+    expect(h['fed-jul']).toEqual([]);
   });
 
   it('appending twice for the same UTC day overwrites the prior value', async () => {
-    await appendDailySpread('btc-100k', 4);
-    await appendDailySpread('btc-100k', 9.25);
+    await appendDailySpread('btc-150k', 4);
+    await appendDailySpread('btc-150k', 9.25);
     const h = await readHistory();
-    expect(h['btc-100k']).toEqual([{ date: TODAY, spread: 9.25 }]);
+    expect(h['btc-150k']).toEqual([{ date: TODAY, spread: 9.25 }]);
   });
 
   it('readHistory truncates each pair to the last 7 entries by date', async () => {
@@ -72,28 +72,28 @@ describe('history store', () => {
     await writeFile(
       path,
       JSON.stringify({
-        'fed-may': series,
-        'fed-jun': [],
-        'btc-100k': [],
-        'spx-7000': [],
+        'fed-jun': series,
+        'fed-jul': [],
+        'btc-150k': [],
+        'spx-7400': [],
       }),
       'utf8',
     );
 
     const h = await readHistory();
-    expect(h['fed-may']).toHaveLength(7);
+    expect(h['fed-jun']).toHaveLength(7);
     // Should be the LAST 7, sorted ascending.
-    expect(h['fed-may'].map((e) => e.date)).toEqual(dates.slice(3));
-    expect(h['fed-may'].map((e) => e.spread)).toEqual([3, 4, 5, 6, 7, 8, 9]);
+    expect(h['fed-jun'].map((e) => e.date)).toEqual(dates.slice(3));
+    expect(h['fed-jun'].map((e) => e.spread)).toEqual([3, 4, 5, 6, 7, 8, 9]);
   });
 
   it('creates the parent directory when it does not yet exist', async () => {
     const nested = join(tmpdir(), `pmws-nested-${Date.now()}`, 'sub', 'history.json');
     process.env.HISTORY_FILE = nested;
     try {
-      await appendDailySpread('spx-7000', -3);
+      await appendDailySpread('spx-7400', -3);
       const h = await readHistory();
-      expect(h['spx-7000']).toEqual([{ date: TODAY, spread: -3 }]);
+      expect(h['spx-7400']).toEqual([{ date: TODAY, spread: -3 }]);
     } finally {
       await rm(dirname(dirname(nested)), { recursive: true, force: true });
     }
@@ -103,6 +103,6 @@ describe('history store', () => {
     await mkdir(dirname(path), { recursive: true });
     await writeFile(path, '{not json', 'utf8');
     const h = await readHistory();
-    expect(h['fed-may']).toEqual([]);
+    expect(h['fed-jun']).toEqual([]);
   });
 });

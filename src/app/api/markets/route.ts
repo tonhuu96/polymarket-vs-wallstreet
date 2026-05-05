@@ -31,8 +31,8 @@ export const revalidate = 300;
 async function fetchWallstreet(pair: PairConfig): Promise<number> {
   switch (pair.wallstreetMethod) {
     case 'cme-fedwatch': {
-      if (pair.id === 'fed-may') return fetchFedWatchCutProb('may-2026');
       if (pair.id === 'fed-jun') return fetchFedWatchCutProb('jun-2026');
+      if (pair.id === 'fed-jul') return fetchFedWatchCutProb('jul-2026');
       throw new Error(`cme-fedwatch dispatch missing for pair ${pair.id}`);
     }
     case 'deribit-bs': {

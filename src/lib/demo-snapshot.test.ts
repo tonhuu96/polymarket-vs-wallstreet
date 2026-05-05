@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { getDemoSnapshot } from './demo-snapshot';
 import type { PairId } from './types';
 
-const ALL_IDS: PairId[] = ['fed-may', 'fed-jun', 'btc-100k', 'spx-7000'];
+const ALL_IDS: PairId[] = ['fed-jun', 'fed-jul', 'btc-150k', 'spx-7400'];
 
 describe('getDemoSnapshot', () => {
   const snap = getDemoSnapshot();

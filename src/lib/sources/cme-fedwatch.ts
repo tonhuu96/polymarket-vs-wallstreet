@@ -11,11 +11,11 @@
 
 import { z } from 'zod';
 
-export type FedMeeting = 'may-2026' | 'jun-2026';
+export type FedMeeting = 'jun-2026' | 'jul-2026';
 
 const FALLBACKS: Record<FedMeeting, number> = {
-  'may-2026': 18,
-  'jun-2026': 64,
+  'jun-2026': 5,
+  'jul-2026': 12,
 };
 
 const FedWatchPayloadSchema = z.object({

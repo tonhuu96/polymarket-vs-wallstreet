@@ -2,16 +2,18 @@
 
 Cross-market arbitrage dashboard. Compares Polymarket prediction-market odds against Wall Street's options-implied probabilities for the same binary events. Highlights divergences in real time.
 
-![Dashboard screenshot in DEMO MODE](docs/screenshot-demo.png)
+![Dashboard screenshot — live data](docs/screenshot-live.png)
 
 ## What it tracks
 
+Pair set verified against Polymarket Gamma on 2026-05-05.
+
 | Pair | Polymarket source | Wall Street source |
 |------|-------------------|--------------------|
-| Fed cut at May 2026 FOMC | Polymarket Gamma API | CME FedWatch (with hardcoded fallback) |
-| Fed cut at June 2026 FOMC | Polymarket Gamma API | CME FedWatch (with hardcoded fallback) |
-| Bitcoin > $100k by Q2 2026 | Polymarket Gamma API | Deribit BTC option chain → Black-Scholes |
-| S&P 500 > 7,000 by Dec 19 2026 | Polymarket Gamma API | Yahoo Finance SPY options × 10 → Black-Scholes |
+| Fed cut at June 2026 FOMC | `will-the-fed-decrease-interest-rates-by-25-bps-after-the-june-2026-meeting` | CME FedWatch (with hardcoded fallback) |
+| Fed cut at July 2026 FOMC | `will-the-fed-decrease-interest-rates-by-25-bps-after-the-july-2026-meeting` | CME FedWatch (with hardcoded fallback) |
+| Bitcoin > $150k by Dec 31 2026 | `will-bitcoin-hit-150k-by-december-31-2026` | Deribit BTC option chain → Black-Scholes |
+| S&P 500 hits 7,400 by Dec 31 2026 | `spx-hit-7400-high-dec-2026` | Yahoo Finance SPY options × 10 → Black-Scholes |
 
 ## Architecture
 
@@ -73,9 +75,9 @@ src/
 
 ## Heads-up
 
-- **Polymarket slugs drift** when markets close or get renamed. If a pair returns 404, swap the slug in `src/lib/pairs.ts` for the closest active equivalent.
+- **Polymarket slugs drift** when markets close or get renamed. If a pair returns 404, swap the slug in `src/lib/pairs.ts` for the closest active equivalent. (The slug set in this repo was already swapped once — the May 2026 FOMC market and the original BTC > $100k market are no longer tradeable.)
 - **CME FedWatch** has no formally documented JSON endpoint. The implementation tries a placeholder URL and falls back to a hardcoded snapshot — wire in a real endpoint when one becomes available.
-- **Yahoo Finance** rate-limits unauthenticated traffic. The client sends a Mozilla `User-Agent`; if you see 401/429, throttle further or proxy.
+- **Yahoo Finance** now requires a "crumb" anti-scraping token. The plain `User-Agent` workaround returns `Unauthorized — Invalid Crumb`, so the SPY pair currently runs in fallback. Fixing this means the cookie/crumb dance that `yfinance` does, or proxying through a service that handles it.
 - **Black-Scholes assumptions** (constant vol, zero-rate, GBM dynamics) are deliberate simplifications. Good enough for headline divergences, not for trading PnL.
 
 ## Extensions

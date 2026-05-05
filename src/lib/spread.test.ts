@@ -42,18 +42,18 @@ describe('isLargeSpread', () => {
 
 describe('largestSpread', () => {
   it('picks the pair with biggest absolute spread', () => {
-    const pairs = [mkPair('fed-may', 5), mkPair('fed-jun', -18), mkPair('btc-100k', 12)];
+    const pairs = [mkPair('fed-jun', 5), mkPair('fed-jul', -18), mkPair('btc-150k', 12)];
     const winner = largestSpread(pairs);
-    expect(winner.id).toBe('fed-jun');
+    expect(winner.id).toBe('fed-jul');
   });
 
   it('handles signed values correctly (negative wins over smaller positive)', () => {
-    const pairs = [mkPair('fed-may', 9), mkPair('fed-jun', -15)];
+    const pairs = [mkPair('fed-jun', 9), mkPair('fed-jul', -15)];
     expect(largestSpread(pairs).spread).toBe(-15);
   });
 
   it('returns the only pair when given one', () => {
-    const pairs = [mkPair('fed-may', 3)];
-    expect(largestSpread(pairs).id).toBe('fed-may');
+    const pairs = [mkPair('fed-jun', 3)];
+    expect(largestSpread(pairs).id).toBe('fed-jun');
   });
 });

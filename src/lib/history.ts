@@ -18,7 +18,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import type { PairId } from './types';
 
-const ALL_PAIR_IDS: readonly PairId[] = ['fed-may', 'fed-jun', 'btc-100k', 'spx-7000'] as const;
+const ALL_PAIR_IDS: readonly PairId[] = ['fed-jun', 'fed-jul', 'btc-150k', 'spx-7400'] as const;
 
 export interface HistoryEntry {
   /** UTC `YYYY-MM-DD`. */

@@ -7,10 +7,10 @@ vi.mock('@/lib/sources/polymarket', () => ({
   fetchPolymarketYes: vi.fn(async (slug: string) => {
     // Deterministic per-slug values so we can assert spread = poly - wall.
     const map: Record<string, number> = {
-      'fed-decision-in-may-2026': 25,
-      'fed-decision-in-june-2026': 50,
-      'will-bitcoin-reach-100000-by-june-30-2026': 70,
-      'sp-500-above-7000-by-december-31-2026': 40,
+      'will-the-fed-decrease-interest-rates-by-25-bps-after-the-june-2026-meeting': 8,
+      'will-the-fed-decrease-interest-rates-by-25-bps-after-the-july-2026-meeting': 14,
+      'will-bitcoin-hit-150k-by-december-31-2026': 70,
+      'spx-hit-7400-high-dec-2026': 40,
     };
     if (slug in map) return map[slug];
     throw new Error(`unexpected slug ${slug}`);
@@ -18,8 +18,8 @@ vi.mock('@/lib/sources/polymarket', () => ({
 }));
 
 vi.mock('@/lib/sources/cme-fedwatch', () => ({
-  fetchFedWatchCutProb: vi.fn(async (m: 'may-2026' | 'jun-2026') =>
-    m === 'may-2026' ? 20 : 60,
+  fetchFedWatchCutProb: vi.fn(async (m: 'jun-2026' | 'jul-2026') =>
+    m === 'jun-2026' ? 5 : 12,
   ),
 }));
 
@@ -76,10 +76,10 @@ describe('GET /api/markets', () => {
     >;
 
     // poly − wall, all from the mocks above.
-    expect(byId['fed-may']).toMatchObject({ polymarket: 25, wallstreet: 20, spread: 5, demo: false });
-    expect(byId['fed-jun']).toMatchObject({ polymarket: 50, wallstreet: 60, spread: -10, demo: false });
-    expect(byId['btc-100k']).toMatchObject({ polymarket: 70, wallstreet: 55, spread: 15, demo: false });
-    expect(byId['spx-7000']).toMatchObject({ polymarket: 40, wallstreet: 42, spread: -2, demo: false });
+    expect(byId['fed-jun']).toMatchObject({ polymarket: 8, wallstreet: 5, spread: 3, demo: false });
+    expect(byId['fed-jul']).toMatchObject({ polymarket: 14, wallstreet: 12, spread: 2, demo: false });
+    expect(byId['btc-150k']).toMatchObject({ polymarket: 70, wallstreet: 55, spread: 15, demo: false });
+    expect(byId['spx-7400']).toMatchObject({ polymarket: 40, wallstreet: 42, spread: -2, demo: false });
 
     // updatedAt should parse as a recent ISO timestamp.
     expect(typeof body.updatedAt).toBe('string');

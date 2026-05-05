@@ -6,14 +6,14 @@
  * so it is also expressed in pp (range -100..100).
  */
 
-export type PairId = 'fed-may' | 'fed-jun' | 'btc-100k' | 'spx-7000';
+export type PairId = 'fed-jun' | 'fed-jul' | 'btc-150k' | 'spx-7400';
 
 export type Side = 'polymarket' | 'wallstreet';
 
 export interface PairSnapshot {
   /** Stable identifier for the matched event. */
   id: PairId;
-  /** Human-friendly event label, e.g. "Fed cut at May 2026 FOMC". */
+  /** Human-friendly event label, e.g. "Fed cut at June 2026 FOMC". */
   label: string;
   /** Suggested directional trade copy, e.g. "Long Polymarket / Short FedWatch". */
   tradable: string;

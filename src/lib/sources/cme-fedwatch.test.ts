@@ -17,15 +17,15 @@ describe('fetchFedWatchCutProb', () => {
       }),
     );
 
-    const result = await fetchFedWatchCutProb('may-2026');
+    const result = await fetchFedWatchCutProb('jun-2026');
     expect(result).toBeCloseTo(55, 10);
   });
 
   it('returns the fallback when fetch rejects (network error)', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network down')));
 
-    expect(await fetchFedWatchCutProb('may-2026')).toBe(18);
-    expect(await fetchFedWatchCutProb('jun-2026')).toBe(64);
+    expect(await fetchFedWatchCutProb('jun-2026')).toBe(5);
+    expect(await fetchFedWatchCutProb('jul-2026')).toBe(12);
   });
 
   it('returns the fallback on non-200 response', async () => {
@@ -38,7 +38,7 @@ describe('fetchFedWatchCutProb', () => {
       }),
     );
 
-    expect(await fetchFedWatchCutProb('jun-2026')).toBe(64);
+    expect(await fetchFedWatchCutProb('jul-2026')).toBe(12);
   });
 
   it('returns the fallback on malformed JSON payload', async () => {
@@ -51,7 +51,7 @@ describe('fetchFedWatchCutProb', () => {
       }),
     );
 
-    expect(await fetchFedWatchCutProb('may-2026')).toBe(18);
+    expect(await fetchFedWatchCutProb('jun-2026')).toBe(5);
   });
 
   it('returns the fallback when probability is out of [0,1]', async () => {
@@ -64,6 +64,6 @@ describe('fetchFedWatchCutProb', () => {
       }),
     );
 
-    expect(await fetchFedWatchCutProb('jun-2026')).toBe(64);
+    expect(await fetchFedWatchCutProb('jul-2026')).toBe(12);
   });
 });
