@@ -16,92 +16,81 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('fetchSpyImpliedAbove', () => {
-  it('selects the call closest to SPY-equivalent strike and returns a probability in [0,100]', async () => {
-    // expiry one year out
-    const expiry = new Date();
-    expiry.setUTCFullYear(expiry.getUTCFullYear() + 1);
-    const expiryIso = expiry.toISOString();
-    const expirationUnix = Math.floor(expiry.getTime() / 1000);
-
+describe('fetchSpyImpliedAbove (sidecar)', () => {
+  it('returns the sidecar probability when the response is valid', async () => {
     const fetchMock = mockFetch({
-      optionChain: {
-        result: [
-          {
-            quote: { regularMarketPrice: 680 },
-            options: [
-              {
-                calls: [
-                  { strike: 650, impliedVolatility: 0.18, expiration: expirationUnix },
-                  { strike: 700, impliedVolatility: 0.2, expiration: expirationUnix },
-                  { strike: 750, impliedVolatility: 0.22, expiration: expirationUnix },
-                ],
-              },
-            ],
-          },
-        ],
-      },
+      probability: 41.19,
+      spot: 723.48,
+      strike: 740,
+      iv: 0.193,
+      t_years: 0.655,
+      expiry: '2026-12-31',
     });
 
     const result = await fetchSpyImpliedAbove({
-      targetIndexLevel: 7000,
-      expiryIso,
+      targetIndexLevel: 7400,
+      expiryIso: '2026-12-31T21:00:00Z',
     });
 
-    expect(result).toBeGreaterThanOrEqual(0);
-    expect(result).toBeLessThanOrEqual(100);
-    // Spot 680 < strike 700 with ~20% vol, ~1y -> roughly 30-50%.
-    expect(result).toBeGreaterThan(20);
-    expect(result).toBeLessThan(60);
+    expect(result).toBeCloseTo(41.19, 5);
 
-    // Verify Mozilla UA and revalidate options were sent.
-    const [calledUrl, calledOpts] = fetchMock.mock.calls[0];
-    expect(calledUrl).toContain('query2.finance.yahoo.com');
-    expect(calledOpts).toEqual(
-      expect.objectContaining({
-        next: { revalidate: 300 },
-        headers: expect.objectContaining({ 'User-Agent': expect.stringContaining('Mozilla') }),
-      }),
-    );
+    // Verify the sidecar URL was assembled correctly.
+    const [calledUrl] = fetchMock.mock.calls[0];
+    const u = new URL(String(calledUrl));
+    expect(u.host).toBe('127.0.0.1:7301');
+    expect(u.pathname).toBe('/spy');
+    expect(u.searchParams.get('target_index')).toBe('7400');
+    expect(u.searchParams.get('expiry')).toBe('2026-12-31');
   });
 
-  it('throws when calls array is empty', async () => {
-    const expiry = new Date();
-    expiry.setUTCFullYear(expiry.getUTCFullYear() + 1);
-
-    mockFetch({
-      optionChain: {
-        result: [
-          {
-            quote: { regularMarketPrice: 680 },
-            options: [{ calls: [] }],
-          },
-        ],
-      },
+  it('honors YFINANCE_SIDECAR_URL', async () => {
+    const fetchMock = mockFetch({
+      probability: 50,
+      spot: 700,
+      strike: 700,
+      iv: 0.2,
+      t_years: 0.5,
+      expiry: '2026-12-31',
     });
 
-    await expect(
-      fetchSpyImpliedAbove({ targetIndexLevel: 7000, expiryIso: expiry.toISOString() }),
-    ).rejects.toThrow(/no calls/);
+    const prev = process.env.YFINANCE_SIDECAR_URL;
+    process.env.YFINANCE_SIDECAR_URL = 'http://example.test:9999';
+    try {
+      await fetchSpyImpliedAbove({ targetIndexLevel: 7000, expiryIso: '2026-12-31T21:00:00Z' });
+      const [calledUrl] = fetchMock.mock.calls[0];
+      const u = new URL(String(calledUrl));
+      expect(u.host).toBe('example.test:9999');
+    } finally {
+      if (prev === undefined) delete process.env.YFINANCE_SIDECAR_URL;
+      else process.env.YFINANCE_SIDECAR_URL = prev;
+    }
   });
 
-  it('throws on HTTP error', async () => {
-    const expiry = new Date();
-    expiry.setUTCFullYear(expiry.getUTCFullYear() + 1);
-
-    mockFetch({}, false, 500);
+  it('throws on HTTP error so the route handler can fall back to demo', async () => {
+    mockFetch({}, false, 502);
     await expect(
-      fetchSpyImpliedAbove({ targetIndexLevel: 7000, expiryIso: expiry.toISOString() }),
-    ).rejects.toThrow(/HTTP 500/);
+      fetchSpyImpliedAbove({ targetIndexLevel: 7400, expiryIso: '2026-12-31T21:00:00Z' }),
+    ).rejects.toThrow(/HTTP 502/);
   });
 
   it('throws on malformed payload', async () => {
-    const expiry = new Date();
-    expiry.setUTCFullYear(expiry.getUTCFullYear() + 1);
-
-    mockFetch({ optionChain: { wrong: 'shape' } });
+    mockFetch({ wrong: 'shape' });
     await expect(
-      fetchSpyImpliedAbove({ targetIndexLevel: 7000, expiryIso: expiry.toISOString() }),
+      fetchSpyImpliedAbove({ targetIndexLevel: 7400, expiryIso: '2026-12-31T21:00:00Z' }),
     ).rejects.toThrow(/payload invalid/);
+  });
+
+  it('throws when probability is out of [0,100]', async () => {
+    mockFetch({
+      probability: 150,
+      spot: 700,
+      strike: 700,
+      iv: 0.2,
+      t_years: 0.5,
+      expiry: '2026-12-31',
+    });
+    await expect(
+      fetchSpyImpliedAbove({ targetIndexLevel: 7400, expiryIso: '2026-12-31T21:00:00Z' }),
+    ).rejects.toThrow(/out-of-range/);
   });
 });

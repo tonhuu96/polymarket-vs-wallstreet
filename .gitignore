@@ -41,8 +41,14 @@ yarn-error.log*
 next-env.d.ts
 
 # Auto-screenshots from Claude Code hook
-.claude/screenshots/
+.claude/
+**/.claude/
 
 # Runtime data store
 data/
+
+# Python sidecar venv + cache
+sidecar/.venv/
+sidecar/__pycache__/
+sidecar/.python-version
 
