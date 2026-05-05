@@ -91,9 +91,17 @@ sidecar/
 - **Yahoo Finance** now requires a "crumb" anti-scraping token. We delegate to a small Python sidecar (`sidecar/yfinance_spy.py`) that uses the `yfinance` library — it handles the cookie/crumb dance internally. The Node SPY client calls the sidecar on `http://127.0.0.1:7301`. If the sidecar is down, the SPY pair falls back to demo and the rest of the dashboard keeps working.
 - **Black-Scholes assumptions** (constant vol, zero-rate, GBM dynamics) are deliberate simplifications. Good enough for headline divergences, not for trading PnL.
 
+## Agent integration
+
+This dashboard is built to be consumed by AI agent runtimes (OpenClaw, Hermes, n8n, etc.) without needing access to the source. See:
+
+- [`AGENTS.md`](AGENTS.md) — entry-point with two paths: "modifying this repo" vs "consuming this dashboard"
+- [`docs/agents/api-contract.md`](docs/agents/api-contract.md) — exact JSON schemas, curl examples, cache semantics
+- [`docs/agents/divergence-commentator.md`](docs/agents/divergence-commentator.md) — runtime-agnostic reference agent: system prompt, polling cadence, alert thresholds, output format
+
 ## Extensions
 
-- Pipe spread alerts to Discord / Telegram via webhook when divergence crosses a threshold.
+- Pipe spread alerts to Discord / Telegram via webhook when divergence crosses a threshold (see the divergence-commentator reference).
 - Add a 5th pair — election markets, geopolitics, sports, anything Polymarket prices that has a Wall Street counterpart.
 - Wire a NewsAPI feed that surfaces headlines whenever a spread blows out.
 
