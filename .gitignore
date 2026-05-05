@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Auto-screenshots from Claude Code hook
+.claude/screenshots/
+
+# Runtime data store
+data/
+
